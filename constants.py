@@ -1,0 +1,1 @@
+BACKGROUND_PATH = 'fondos_pgm'
