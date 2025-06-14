@@ -38,7 +38,6 @@ def prepare_data(faces, backgrounds, test_size=0.3, random_state=42, n_component
     # Combinar imágenes y crear etiquetas
     # images = list(faces) + list(backgrounds)
     X = extract_hog_features(chain(faces, backgrounds), desc='Construyendo X')
-    print(f"X shape: {X.shape}")
     y = np.zeros(len(X))
     y[:len(faces)] = 1
 
