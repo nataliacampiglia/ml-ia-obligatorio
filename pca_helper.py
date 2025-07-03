@@ -21,7 +21,7 @@ def extract_hog_features(images, desc='Extrayendo características HOG'):
     """
     return np.array([feature.hog(im) for im in tqdm(images, desc=desc)])
 
-def prepare_data(faces, backgrounds, test_size=0.3, random_state=42, n_components=500):
+def prepare_data(faces, backgrounds, test_size=0.3, random_state=42, n_components=500, use_hog=True):
     """
     Prepara los datos para entrenamiento combinando caras y fondos, extrayendo características,
     y dividiendo en conjuntos de entrenamiento y prueba.
@@ -37,7 +37,12 @@ def prepare_data(faces, backgrounds, test_size=0.3, random_state=42, n_component
     """
     # Combinar imágenes y crear etiquetas
     # images = list(faces) + list(backgrounds)
-    X = extract_hog_features(chain(faces, backgrounds), desc='Construyendo X')
+    all_images = chain(faces, backgrounds)
+    desc='Construyendo X'
+    if use_hog:
+        X = extract_hog_features(all_images, desc=desc)
+    else:
+        X = np.array([im.flatten() for im in tqdm(all_images, desc=desc)])
     y = np.zeros(len(X))
     y[:len(faces)] = 1
 
@@ -57,7 +62,7 @@ def prepare_data(faces, backgrounds, test_size=0.3, random_state=42, n_component
     
     return X_train_pca, X_test, y_train, y_test, scaler, pca
 
-def process_test_images(test_images, scaler, pca):
+def process_test_images(test_images, scaler, pca, use_hog=True):
     """
     Procesa imágenes de prueba usando las mismas transformaciones que los datos de entrenamiento.
     
@@ -69,7 +74,10 @@ def process_test_images(test_images, scaler, pca):
     Returns:
         Datos de prueba transformados listos para predicción
     """
-    X_test = extract_hog_features(test_images, desc='Procesando imágenes de prueba')
+    if use_hog:
+        X_test = extract_hog_features(test_images, desc='Procesando imágenes de prueba')
+    else:
+        X_test = np.array([im.flatten() for im in tqdm(test_images, desc='Procesando imágenes de prueba')])
     X_test_std = scaler.transform(X_test)  # Solo transformamos, no ajustamos
     X_test_pca = pca.transform(X_test_std)
     return X_test_pca
